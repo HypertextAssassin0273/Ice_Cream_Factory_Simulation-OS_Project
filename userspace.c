@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 int main(){
-	long int i = syscall(335);
-	printf("System call sys_icecream returned %ld\n",i);
+	long int i = syscall(452); // 335 (prev ice_cream_facotry), 452 (new ice_cream_facotry), 451 (hello)
+	printf("System call sys_ice_cream_factory returned %ld\n",i);
 	return 0;
 }
