@@ -4,7 +4,6 @@
 #include <pthread.h>
 #include <semaphore.h> 
 
-
 /**
  * DATA about procedures.
  * Boilers = 3. time: 2sec.
@@ -33,29 +32,25 @@ sem_t custWait;	//for customer to not exit till order processed.
 int allDone = 0;	//not all order have been processed.
 int currentOrderRunning;	//global for getting knowledge of current order processing.
 
-
 //global data so that can be accessed from diff functions.
 int Numbers[MAX_ORDERS];
 int numOfOrders;
 int orderDetails[MAX_ORDERS];
 
-int main()
-{
+int main() {
 	// pthread_t manufactureThread;
 	pthread_t tid[MAX_ORDERS];
 
 	printf("Enter the number of orders: \n");
 	scanf("%d", &numOfOrders);
-	if (numOfOrders > MAX_ORDERS)
-	{
+	if (numOfOrders > MAX_ORDERS) {
 		printf("The number of orders in greater than the MAX capacity. Exiting...\n");
 		return 0;
 	}
 
 	int i;
 	printf("Enter the data of each order: \n");
-	for (i = 0; i < numOfOrders; ++i)
-	{
+	for (i = 0; i < numOfOrders; ++i) {
 		scanf("%d", &orderDetails[i]);
 	}
 
@@ -67,8 +62,7 @@ int main()
 	printf("\t\t---Solution for Ice cream factory---\n");
 
 	//Numbering each order.
-	for (i = 0; i < MAX_ORDERS; ++i)
-	{
+	for (i = 0; i < MAX_ORDERS; ++i) {
 		Numbers[i] = i + 1;
 	}
 
@@ -86,32 +80,27 @@ int main()
 	sem_init(&custWait, 0, 0);
 
 	//Creating threads for orders.
-	for (i = 0; i < numOfOrders; ++i)
-	{
+	for (i = 0; i < numOfOrders; ++i) {
 		pthread_create(&tid[i], NULL, customer, (void *)&Numbers[i]);
 	}
 
 	//Joining each of order/customer thread.
-	for (i = 0; i < numOfOrders; ++i)
-	{
+	for (i = 0; i < numOfOrders; ++i) {
 		pthread_join(tid[i], NULL);
 	}
 
-
 	allDone = 1;
-	// pthread_join(manufactureThread, NULL);
+	// pthread_join(manufactureThread, NULL); // [debug]
 
 	return 0;
 }
 
-void *customer(void *id)
-{
+void *customer(void *id) {
 	int num = *(int *)id;
 	printf("The order number %d has been received.\n", num);
 	sleep(1);
 	sem_wait(&waitingLine);	
 	printf("The order number %d is in waiting area now.\n", num);
-
 
 	sem_wait(&orderCounter);
 	sem_post(&waitingLine);
@@ -128,37 +117,29 @@ void *customer(void *id)
 
 }
 
-void *startManufacture(void *nothing)
-{
-	
+void *startManufacture(void *nothing) {
 	pthread_t childThreads[orderDetails[currentOrderRunning - 1]];
-
 	int tempNumbers[orderDetails[currentOrderRunning - 1]];
 
 	int i;
-	for (i = 0; i < orderDetails[currentOrderRunning - 1]; ++i)
-	{
+	for (i = 0; i < orderDetails[currentOrderRunning - 1]; ++i) {
 		tempNumbers[i] = i+1;
 	}
 
-	for (i = 0; i < orderDetails[currentOrderRunning - 1]; ++i)
-	{
+	for (i = 0; i < orderDetails[currentOrderRunning - 1]; ++i) {
 		pthread_create(&childThreads[i], NULL, manufacture, (void *)&tempNumbers[i]);
 	}
 
-	for (i = 0; i < orderDetails[currentOrderRunning - 1]; ++i)
-	{
+	for (i = 0; i < orderDetails[currentOrderRunning - 1]; ++i) {
 		pthread_join(childThreads[i], NULL);
 	}
 
 	printf("The order # %d is finalized and exiting...\n", currentOrderRunning);
 
 	// sem_post(custWait);
-
 }
 
-void *manufacture(void *id)
-{
+void *manufacture(void *id) {
 	int num = *(int *)id;
 
 	sem_wait(&boiler);
@@ -192,6 +173,4 @@ void *manufacture(void *id)
 	sem_post(&wrapping);
 
 	printf("The order number # %d's ice cream # %d is finished/made.\n", currentOrderRunning, num);
-
 }
-
